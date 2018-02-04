@@ -35,8 +35,6 @@ namespace EliteJsonApi.Data
             SetUpEntity(builder.Entity<AtmosphereComposite>());
             SetUpEntity(builder.Entity<Ring>());
             SetUpEntity(builder.Entity<MinorFaction>());
-            SetUpEntity(builder.Entity<Star>());
-            SetUpEntity(builder.Entity<Planet>());
         }
 
         private void SetUpEntity(EntityTypeBuilder<MinorFaction> entity)
@@ -109,25 +107,15 @@ namespace EliteJsonApi.Data
 
         private void SetUpEntity(EntityTypeBuilder<Body> entity)
         {
-            entity.HasDiscriminator(b => b.Type);
             entity.HasIndex(b => b.Name).IsUnique();
             entity.HasIndex(b => b.EdsmId).IsUnique();
             entity.HasIndex(b => b.StarSystemId).IsUnique(false);
             entity.HasIndex(b => b.DistanceToArrival).IsUnique(false);
             entity.HasIndex(b => b.Type).IsUnique(false);
             entity.HasIndex(b => b.SubType).IsUnique(false);
-        }
-
-        private void SetUpEntity(EntityTypeBuilder<Star> entity)
-        {
             entity.HasIndex(s => s.SpectralClass).IsUnique(false);
             entity.HasIndex(s => s.IsMainStar).IsUnique(false);
             entity.HasIndex(s => s.IsScoopable).IsUnique(false);
-        }
-
-        private void SetUpEntity(EntityTypeBuilder<Planet> entity)
-        {
-
         }
 
         private void SetUpEntity(EntityTypeBuilder<AtmosphereComposite> entity)
