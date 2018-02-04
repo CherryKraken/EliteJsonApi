@@ -47,7 +47,7 @@ namespace EliteJsonApi.Data
             entity.HasIndex(mf => mf.IsPlayerFaction).IsUnique(false);
         }
 
-        private void SetUpEntity(EntityTypeBuilder<Belt> entityTypeBuilder)
+        private void SetUpEntity(EntityTypeBuilder<Belt> entity)
         {
             
         }
@@ -57,6 +57,8 @@ namespace EliteJsonApi.Data
             entity.HasIndex(ss => ss.EdsmId).IsUnique();
             entity.HasIndex(ss => ss.EddbId).IsUnique();
             entity.HasIndex(ss => ss.Name).IsUnique();
+            //entity.HasIndex(ss => ss.Name.ToLower()).IsUnique(); // Not sure this is would work for my use case
+            entity.HasIndex(ss => ss.NameLower).IsUnique();
 
             entity.HasIndex(ss => ss.X).IsUnique(false);
             entity.HasIndex(ss => ss.Y).IsUnique(false);

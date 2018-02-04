@@ -19,6 +19,13 @@ namespace EliteJsonApi.Models
         [MaxLength(64)]
         public string Name { get; set; }
 
+        /// <summary>
+        /// Property for indexing the Name property in lowercase
+        /// </summary>
+        [MaxLength(64)]
+        [JsonIgnore]
+        public string NameLower { get => Name.ToLower(); set => NameLower = value; }
+
         #region Coordinates
         public double X { get; set; }
         public double Y { get; set; }
