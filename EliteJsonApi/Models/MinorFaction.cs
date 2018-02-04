@@ -22,15 +22,15 @@ namespace EliteJsonApi.Models
         public bool IsPlayerFaction { get; set; }
 
         [MaxLength(20)]
-        [Lookup(LookupOptions.Government)]
+        [Lookup(LookupOption.Government)]
         public string Government { get; set; }
 
         [MaxLength(30)]
-        [Lookup(LookupOptions.Allegiance)]
+        [Lookup(LookupOption.Allegiance)]
         public string Allegiance { get; set; }
 
         [MaxLength(20)]
-        [Lookup(LookupOptions.State)]
+        [Lookup(LookupOption.State)]
         public string State { get; set; }
 
         [ForeignKey("HomeSystem")]

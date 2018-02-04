@@ -14,10 +14,10 @@ namespace EliteJsonApi.Models
         [MaxLength(40)]
         public string Name { get; set; }
         [MaxLength(15)]
-        [Lookup(LookupOptions.MaterialType)]
+        [Lookup(LookupOption.MaterialType)]
         public string Type { get; set; }
         [MaxLength(1)]
-        [Lookup(LookupOptions.Grades)]
+        [Lookup(LookupOption.MaterialGrade)]
         public string Grade { get; set; }
 
         public ICollection<RawMaterialShare> RawMaterialShares { get; set; }

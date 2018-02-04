@@ -33,35 +33,35 @@ namespace EliteJsonApi.Models
         public long Population { get; set; }
 
         [MaxLength(30)]
-        [Lookup(LookupOptions.Allegiance)]
+        [Lookup(LookupOption.Allegiance)]
         public string Allegiance { get; set; }
 
         [MaxLength(10)]
-        [Lookup(LookupOptions.Security)]
+        [Lookup(LookupOption.Security)]
         public string Security { get; set; }
 
         [MaxLength(10)]
-        [Lookup(LookupOptions.ReserveType)]
+        [Lookup(LookupOption.ReserveType)]
         public string Reserves { get; set; }
 
         [MaxLength(30)]
-        [Lookup(LookupOptions.Economy)]
+        [Lookup(LookupOption.Economy)]
         public string PrimaryEconomy { get; set; }
 
         [MaxLength(20)]
-        [Lookup(LookupOptions.Government)]
+        [Lookup(LookupOption.Government)]
         public string Government { get; set; }
 
         [MaxLength(20)]
-        [Lookup(LookupOptions.State)]
+        [Lookup(LookupOption.State)]
         public string State { get; set; }
 
         [MaxLength(30)]
-        [Lookup(LookupOptions.PowerPlayLeader)]
+        [Lookup(LookupOption.PowerPlayLeader)]
         public string PowerPlayLeader { get; set; }
 
         [MaxLength(30)]
-        [Lookup(LookupOptions.PowerEffect)]
+        [Lookup(LookupOption.PowerEffect)]
         public string PowerPlayState { get; set; }
         
 
