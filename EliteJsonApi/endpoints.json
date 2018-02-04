@@ -1,0 +1,38 @@
+﻿{
+  "usage": "{0}/api/v1/<endpoint>?<parameters>",
+  "method": "GET",
+  "details": [ "All endpoint parameters are optional" ],
+  "endpoints": {
+    "bodies": {
+      "name": "The name of the celestial body to search for (other parameters will be ignored)",
+      "materials": "A comma-separated list of raw materials to filter by (attempts to find planets including all listed materials)",
+      "system": "The name of the system containing bodies to search",
+      "refsystem": "The name of the system to search outwards from (default = 'Sol')",
+      "maxdistance": "The maximum distance, in lightyears, to search around the reference system (default = 50, max = 250)",
+      "sortByShare": "For materials list containing 1 item, boolean value for whether to sort results by highest material share (default = false)"
+    },
+    "factions": {},
+    "stations": {
+      "name": "The name of the stations to filter by",
+      "hasLargePad": "Boolean value for whether stations have large landing pads",
+      "commodities": "A comma-separated list of commodities sold at stations to filter by (attempts to find stations selling all listed materials)",
+      "refsystem": "The name of the system to search outwards from (default = 'Sol')",
+      "maxdistance": "The maximum distance, in lightyears, to search around the reference system (default = 50, max = 250)"
+    },
+    "systems": {
+      "name": "The name of the system to search for (other parameters will be ignored)",
+      "allegiance": "The system allegiance to filter by",
+      "economy": "",
+      "government": "",
+      "state": "",
+      "powername": "",
+      "powerstate": "",
+      "security": "",
+      "needPermit": "Boolean value for whether systems are permit-locked",
+      "controllingFaction": "Filter by the systems hosting the given controlling minor faction",
+      "minorFaction": "Filter by the systems hosting the given minor faction",
+      "refsystem": "The name of the system to search outwards from (default = 'Sol')",
+      "maxdistance": "The maximum distance, in lightyears, to search around the reference system (default = 100, max = 200)"
+    }
+  }
+}
