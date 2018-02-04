@@ -118,7 +118,7 @@ namespace EliteJsonApi.Controllers
             }
 
             StarSystem rs = null;
-            IEnumerable<StarSystem> results;
+            IQueryable<StarSystem> results;
             int maxDist = 100;
 
             // Get a reference system
