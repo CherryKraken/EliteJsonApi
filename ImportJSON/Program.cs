@@ -1,5 +1,6 @@
 ﻿using EliteJsonApi.Data;
 using EliteJsonApi.Models;
+using EliteJsonApi.Models.Helpers;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -78,9 +79,9 @@ namespace ImportJsonAndCsv
                         Id = jo.Value<long>("id"),
                         Name = jo.Value<string>("name"),
                         UpdatedAt = DateTimeOffset.FromUnixTimeSeconds(jo.Value<long>("updated_at")).UtcDateTime,
-                        Allegiance = jo.Value<string>("allegiance"),
-                        Government = jo.Value<string>("government"),
-                        State = jo.Value<string>("state"),
+                        Allegiance = jo.Value<string>("allegiance").ToNormalCase(LookupOptions.Allegiances),
+                        Government = jo.Value<string>("government").ToNormalCase(LookupOptions.Governments),
+                        State = jo.Value<string>("state").ToNormalCase(LookupOptions.States),
                         HomeSystemId = jo.Value<long>("home_system_id"),
                         IsPlayerFaction = jo.Value<bool>("is_player_faction")
                     };
@@ -89,7 +90,7 @@ namespace ImportJsonAndCsv
                 }
                 catch
                 {
-
+                    File.AppendAllText(@"E:\debug.txt", "\n\n********** Minor Faction **********\n" + jo.ToString());
                 }
             }
         }
@@ -105,17 +106,18 @@ namespace ImportJsonAndCsv
                 {
                     var ss = new StarSystem
                     {
-                        Allegiance = jo.Value<string>("allegiance"),
+                        Allegiance = jo.Value<string>("allegiance").ToNormalCase(LookupOptions.Allegiances),
                         EddbId = jo.Value<long?>("id"),
                         EdsmId = jo.Value<long?>("edsm_id"),
-                        Government = jo.Value<string>("government"),
+                        Government = jo.Value<string>("government").ToNormalCase(LookupOptions.Governments),
                         IsPopulated = true,
-                        State = jo.Value<string>("state"),
-                        PrimaryEconomy = jo.Value<string>("primary_economy"),
+                        State = jo.Value<string>("state").ToNormalCase(LookupOptions.States),
+                        PrimaryEconomy = jo.Value<string>("primary_economy").ToNormalCase(LookupOptions.Economies),
                         Name = jo.Value<string>("name"),
-                        Security = jo.Value<string>("security"),
-                        PowerPlayLeader = jo.Value<string>("power"),
-                        PowerPlayState = jo.Value<string>("power_state"),
+                        Security = jo.Value<string>("security").ToNormalCase(LookupOptions.SecurityTypes),
+                        PowerPlayLeader = jo.Value<string>("power").ToNormalCase(LookupOptions.PowerPlayLeaders),
+                        PowerPlayState = jo.Value<string>("power_state").ToNormalCase(LookupOptions.PowerEffects),
+                        //Reserves not in this
                         Population = jo.Value<long>("population"),
                         X = jo.Value<double>("x"),
                         Y = jo.Value<double>("y"),
@@ -145,29 +147,18 @@ namespace ImportJsonAndCsv
                             }
                             catch (DbUpdateException)
                             {
-                                errCount++;
+                                File.AppendAllText(@"E:\debug.txt", "\n\n********** Minor Faction Presence **********\n" + m.ToString());
                             }
                         }
                     }
 
                     TryAddOrUpdateSystem(ss);
                 }
-                catch (NullReferenceException)
+                catch
                 {
-                    //Console.WriteLine(jo);
-                }
-                catch (InvalidCastException)
-                {
-                    Console.WriteLine("***" + jo.Value<string>("name"));
-                }
-                catch (DbUpdateException)
-                {
-                    errCount2++;
+                    File.AppendAllText(@"E:\debug.txt", "\n\n********** Star System **********\n" + jo.ToString());
                 }
             }
-
-            Console.WriteLine("Presence errors: " + errCount);
-            Console.WriteLine("Controlling errors: " + errCount);
         }
 
         private static void ImportSystemsCsv(string path)
@@ -240,6 +231,10 @@ namespace ImportJsonAndCsv
             }
         }
 
+        /// <summary>
+        /// EDSM's JSON is compressed, omits null-value properties
+        /// </summary>
+        /// <param name="path"></param>
         private static void ImportEdsmBodiesJson(string path)
         {
             // EDSM document is in a similar format to Newline-Delimited JSON, so streaming is the way to go
@@ -250,78 +245,117 @@ namespace ImportJsonAndCsv
                 {
                     line = line.TrimEnd(','); // Remove the ending comma to ensure valid JSON
                     JObject jo = JObject.Parse(line);
-
-                    Body body;
+                    var pKeys = jo.Properties().Select(p => p.Name);
                     bool added = false;
 
-                    if (jo.Value<string>("type").ToLower().Equals("star"))
+                    Body body = new Body
                     {
-                        body = new Star();
-                        body = new Star
-                        {
-                            Id = jo.Value<long>("id"),
-                            Type = jo.Value<string>("type"),
-                            EdsmId = jo.Value<long?>("id"),
-                            StarSystemId = jo.Value<long>("systemId"), // Give it the EDSM ID, switch to inserts and updates
-                            Name = jo.Value<string>("name"),
-                            SubType = jo.Value<string>("subType"),
-                            DistanceToArrival = jo.Value<double>("distanceToArrival"),
-                            SolarMasses = jo.Value<float?>("solarMasses"),
-                            SolarRadius = jo.Value<double?>("solarRadius"),
-                            SurfaceTemperature = jo.Value<int>("surfaceTemperature"),
-                            OrbitalPeriod = jo.Value<double?>("orbitalPeriod"),
-                            SemiMajorAxis = jo.Value<double?>("semiMajorAxis"),
-                            OrbitalEccentricity = jo.Value<double?>("orbitalEccentricity"),
-                            OrbitalInclination = jo.Value<float?>("orbitalInclination"),
-                            ArgOfPeriapsis = jo.Value<double?>("argOfPeriapsis"),
-                            RotationalPeriod = jo.Value<double?>("rotationalPeriod"),
-                            IsTidallyLocked = jo.Value<bool>("rotationalPeriodTidallyLocked"),
-                            AxialTilt = jo.Value<double?>("axialTilt"),
-                            AbsoluteMagnitude = jo.Value<float?>("absoluteMagnitude"),
-                            Age = jo.Value<uint?>("age"),
-                            IsMainStar = jo.Value<bool>("isMainStar"),
-                            IsScoopable = jo.Value<bool>("isScoopable"),
-                            LuminosityClass = jo.Value<string>("luminosity")
-                        };
+                        Id = jo.Value<long>("id"),
+                        Type = jo.Value<string>("type").ToNormalCase(LookupOptions.BodyTypes),
+                        EdsmId = jo.Value<long?>("id"),
+                        StarSystemId = jo.Value<long>("systemId"), // Give it the EDSM ID, switch to my ID during inserts and updates
+                        Name = jo.Value<string>("name")
+                    };
 
-                        if (body.SubType.Contains("lack"))
-                            (body as Star).SpectralClass = "BH";
-                        else if (body.SubType.Contains("eutron"))
-                            (body as Star).SpectralClass = "N";
-                        else if (body.SubType[1].Equals(' '))
-                            (body as Star).SpectralClass = body.SubType.Substring(0, 1);
-                    }
-                    else //if (jo.Value<string>("type").ToLower().Equals("planet"))
-                    {
-                        body = new Planet
-                        {
-                            Id = jo.Value<long>("id"),
-                            Type = jo.Value<string>("type"),
-                            EdsmId = jo.Value<long?>("id"),
-                            StarSystemId = jo.Value<long>("systemId"), // Give it the EDSM ID, switch to inserts and updates
-                            Name = jo.Value<string>("name"),
-                            SubType = jo.Value<string>("subType"),
-                            IsLandable = jo.Value<bool>("isLandable"),
-                            DistanceToArrival = jo.Value<double>("distanceToArrival"),
-                            Gravity = jo.Value<double?>("gravity"),
-                            EarthMasses = jo.Value<double?>("earthMasses"),
-                            Radius = jo.Value<float?>("radius"),
-                            SurfaceTemperature = jo.Value<int>("surfaceTemperature"),
-                            VolcanismType = jo.Value<string>("volcanismType"),
-                            AtmosphereType = jo.Value<string>("atmosphereType"),
-                            TerraformingState = jo.Value<string>("terraformingState"),
-                            OrbitalPeriod = jo.Value<double?>("orbitalPeriod"),
-                            SemiMajorAxis = jo.Value<double?>("semiMajorAxis"),
-                            OrbitalEccentricity = jo.Value<double?>("orbitalEccentricity"),
-                            OrbitalInclination = jo.Value<float?>("orbitalInclination"),
-                            ArgOfPeriapsis = jo.Value<double?>("argOfPeriapsis"),
-                            RotationalPeriod = jo.Value<double?>("rotationalPeriod"),
-                            IsTidallyLocked = jo.Value<bool>("rotationalPeriodTidallyLocked"),
-                            AxialTilt = jo.Value<double?>("axialTilt")
-                        };
+                    if (pKeys.Contains("subType"))
+                        body.SubType = jo.Value<string>("subType");
 
-                        added = TryAddOrUpdateBody(body);
-                    }
+                    if (pKeys.Contains("distanceToArrival"))
+                        body.DistanceToArrival = jo.Value<double?>("distanceToArrival");
+
+                    if (pKeys.Contains("solarMasses"))
+                        body.SolarMasses = jo.Value<float?>("solarMasses");
+
+                    if (pKeys.Contains("solarRadius"))
+                        body.SolarRadius = jo.Value<double?>("solarRadius");
+
+                    if (pKeys.Contains("surfaceTemperature"))
+                        body.SurfaceTemperature = jo.Value<int?>("surfaceTemperature");
+
+                    if (pKeys.Contains("orbitalPeriod"))
+                        body.OrbitalPeriod = jo.Value<double?>("orbitalPeriod");
+
+                    if (pKeys.Contains("semiMajorAxis"))
+                        body.SemiMajorAxis = jo.Value<double?>("semiMajorAxis");
+
+                    if (pKeys.Contains("orbitalEccentricity"))
+                        body.OrbitalEccentricity = jo.Value<double?>("orbitalEccentricity");
+
+                    if (pKeys.Contains("orbitalInclination"))
+                        body.OrbitalInclination = jo.Value<float?>("orbitalInclination");
+
+                    if (pKeys.Contains("argOfPeriapsis"))
+                        body.ArgOfPeriapsis = jo.Value<double?>("argOfPeriapsis");
+
+                    if (pKeys.Contains("rotationalPeriod"))
+                        body.RotationalPeriod = jo.Value<double?>("rotationalPeriod");
+
+                    if (pKeys.Contains("rotationalPeriodTidallyLocked"))
+                        body.IsTidallyLocked = jo.Value<bool?>("rotationalPeriodTidallyLocked");
+
+                    if (pKeys.Contains("axialTilt"))
+                        body.AxialTilt = jo.Value<double?>("axialTilt");
+
+                    if (pKeys.Contains("absoluteMagnitude"))
+                        body.AbsoluteMagnitude = jo.Value<float?>("absoluteMagnitude");
+
+                    if (pKeys.Contains("age"))
+                        body.Age = jo.Value<uint?>("age");
+
+                    if (pKeys.Contains("isMainStar"))
+                        body.IsMainStar = jo.Value<bool?>("isMainStar");
+
+                    if (pKeys.Contains("isScoopable"))
+                        body.IsScoopable = jo.Value<bool?>("isScoopable");
+
+                    if (pKeys.Contains("luminosity"))
+                        body.LuminosityClass = jo.Value<string>("luminosity");
+
+                    // White Dwarf classes are 2-3 chars starting with D
+                    if (body.Type.ToLower().Equals("star") && body.SubType.ToLower().Contains("white dwarf"))
+                        body.SpectralClass = body.SubType.Split('(')[1].TrimEnd(')');
+                    // Herbig Stars are classed as Ae/Be
+                    else if (body.Type.ToLower().Equals("star") && body.SubType.ToLower().Contains("herbig"))
+                        body.SpectralClass = "Ae/Be";
+                    // Carbon Stars are classed as C or CN
+                    else if (body.Type.ToLower().Equals("star") && body.SubType.ToLower().Equals("c star"))
+                        body.SpectralClass = "C";
+                    else if (body.Type.ToLower().Equals("star") && body.SubType.ToLower().Equals("cn star"))
+                        body.SpectralClass = "CN";
+                    // Set Black Holes and Neutron Stars to blank
+                    else if (body.Type.ToLower().Equals("star") && (body.SubType.ToLower().Contains("black hole") || body.SubType.ToLower().Contains("neutron")))
+                        body.SpectralClass = "";
+                    // Set other stars to their letter class (e.g. M, F, O, etc.)
+                    else if (body.Type.ToLower().Equals("star"))
+                        body.SpectralClass = body.SubType.Split('(')[0];
+                    // Rest are planets
+                    else
+                        body.SpectralClass = default(string);
+
+                    if (pKeys.Contains("isLandable"))
+                        body.IsLandable = jo.Value<bool?>("isLandable");
+
+                    if (pKeys.Contains("gravity"))
+                        body.Gravity = jo.Value<double?>("gravity");
+
+                    if (pKeys.Contains("earthMasses"))
+                        body.EarthMasses = jo.Value<double?>("earthMasses");
+
+                    if (pKeys.Contains("radius"))
+                        body.Radius = jo.Value<float?>("radius");
+
+                    if (pKeys.Contains("volcanismType"))
+                        body.VolcanismType = jo.Value<string>("volcanismType");
+
+                    if (pKeys.Contains("atmosphereType"))
+                        body.AtmosphereType = jo.Value<string>("atmosphereType");
+
+                    if (pKeys.Contains("terraformingState"))
+                        body.TerraformingState = jo.Value<string>("terraformingState");
+
+                    // Don't even continue if this body wasn't added
+                    added = TryAddOrUpdateBody(body);
+
                     if (added && jo.TryGetValue("materials", out JToken mats))
                     {
                         foreach (JProperty jp in mats)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace EliteJsonApi.Models
 {
-    public abstract class Body
+    public class Body
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.None)]
         public long Id { get; set; }
@@ -32,9 +32,9 @@ namespace EliteJsonApi.Models
         public double? SolarRadius { get; set; }
 
         /// <summary>
-        /// A, Ae/Be, B, BH, C, D, F, G, K, L, M, N, O, T, Y, etc.
+        /// A, Ae/Be, B, C, D, F, G, K, L, M, O, T, Y, etc.
         /// </summary>
-        [MaxLength(6)]
+        [MaxLength(3)]
         public string SpectralClass { get; set; }
         /// <summary>
         /// I - VII

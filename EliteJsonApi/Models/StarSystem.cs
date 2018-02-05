@@ -11,16 +11,17 @@ namespace EliteJsonApi.Models
 {
     public class StarSystem
     {
-        //[Key]
+        //[Key] // Removed be attribute because EF doesn't like its references in MinorFaction
         public long Id { get; set; }
         public long? EddbId { get; set; }
         public long? EdsmId { get; set; }
 
+        [Required]
         [MaxLength(64)]
         public string Name { get; set; }
 
         /// <summary>
-        /// Property for indexing the Name property in lowercase
+        /// Property for indexing the Name property to lowercase in the database
         /// </summary>
         [MaxLength(64)]
         [JsonIgnore]
