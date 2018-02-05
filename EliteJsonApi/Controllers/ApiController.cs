@@ -1,5 +1,6 @@
 ﻿using EliteJsonApi.Data;
 using EliteJsonApi.Models;
+using EliteJsonApi.Models.Helpers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
@@ -113,7 +114,7 @@ namespace EliteJsonApi.Controllers
             if (query.ContainsKey("name"))
             {
                 return _context.StarSystem
-                    .Where(ss => string.Equals(ss.Name, query["name"], StringComparison.OrdinalIgnoreCase))
+                    .Where(ss => ss.NameLower.Equals(((string)query["name"]).ToLower()))
                     .Include(ss => ss.MinorFactionPresences);
             }
 
@@ -124,7 +125,7 @@ namespace EliteJsonApi.Controllers
             // Get a reference system
             if (query.ContainsKey("refsystem"))
             {
-                StarSystem s = _context.StarSystem.SingleOrDefault(ss => string.Equals(ss.Name, query["refsystem"], StringComparison.OrdinalIgnoreCase));
+                StarSystem s = _context.StarSystem.SingleOrDefault(ss => ss.NameLower.Equals(((string)query["refsystem"]).ToLower()));
                 if (s != null)
                 {
                     rs = s;
@@ -132,7 +133,7 @@ namespace EliteJsonApi.Controllers
             }
             if (rs == null)
             {
-                rs = _context.StarSystem.Single(ss => string.Equals(ss.Name, "sol", StringComparison.OrdinalIgnoreCase));
+                rs = _context.StarSystem.Single(ss => ss.NameLower.Equals("sol"));
             }
 
             // Get a max search distance
@@ -165,49 +166,49 @@ namespace EliteJsonApi.Controllers
             // Filter by allegiance
             if (query.ContainsKey("allegiance"))
             {
-                results = results.Where(ss => string.Equals(ss.Allegiance, query["allegiance"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.Allegiance.Equals(((string)query["allegiance"]).ToNormalCase(LookupOptions.Allegiances)));
             }
 
             // Filter by government
             if (query.ContainsKey("government"))
             {
-                results = results.Where(ss => string.Equals(ss.Government, query["government"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.Government.Equals(((string)query["government"]).ToNormalCase(LookupOptions.Governments)));
             }
 
             // Filter by system state
             if (query.ContainsKey("state"))
             {
-                results = results.Where(ss => string.Equals(ss.State, query["state"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.State.Equals(((string)query["state"]).ToNormalCase(LookupOptions.States)));
             }
 
             // Filter by system security level
             if (query.ContainsKey("security"))
             {
-                results = results.Where(ss => string.Equals(ss.Security, query["security"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.Security.Equals(((string)query["security"]).ToNormalCase(LookupOptions.SecurityTypes)));
             }
 
             // Filter by primary economy
             if (query.ContainsKey("economy"))
             {
-                results = results.Where(ss => string.Equals(ss.PrimaryEconomy, query["economy"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.PrimaryEconomy.Equals(((string)query["economy"]).ToNormalCase(LookupOptions.Economies)));
             }
 
             // Filter by Power Play leader name
             if (query.ContainsKey("powername"))
             {
-                results = results.Where(ss => string.Equals(ss.PowerPlayLeader, query["powername"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.PowerPlayLeader.Equals(((string)query["powername"]).ToNormalCase(LookupOptions.PowerPlayLeaders)));
             }
 
             // Filter by Power Play system state
             if (query.ContainsKey("powerstate"))
             {
-                results = results.Where(ss => string.Equals(ss.PowerPlayState, query["powerstate"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.PowerPlayState.Equals(((string)query["powerstate"]).ToNormalCase(LookupOptions.PowerEffects)));
             }
 
             // Filter by mining reserves level
             if (query.ContainsKey("reserves"))
             {
-                results = results.Where(ss => string.Equals(ss.Reserves, query["reserves"], StringComparison.OrdinalIgnoreCase));
+                results = results.Where(ss => ss.Reserves.Equals(((string)query["reserves"]).ToNormalCase(LookupOptions.ReserveTypes)));
             }
 
             if (query.ContainsKey("page") && int.TryParse(query["page"], out int page)) { }

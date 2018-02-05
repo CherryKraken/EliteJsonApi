@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EliteJsonApi.Models.Helpers.DataAnnotations
+namespace EliteJsonApi.Models.Helpers
 {
     public static class LookupOptions
     {
