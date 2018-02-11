@@ -79,6 +79,18 @@ namespace EliteJsonApi.Models.Helpers
         /// <returns></returns>
         public static string ToNormalCase(this string target, IEnumerable<string> options)
         {
+            if (target == null)
+            {
+                if (options.Contains("None"))
+                {
+                    return "None";
+                }
+                else if (options.Contains("Low"))
+                {
+                    return "Low";
+                }
+            }
+
             foreach (string s in options)
             {
                 if (s.Equals(target, StringComparison.OrdinalIgnoreCase))
