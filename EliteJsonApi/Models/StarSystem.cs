@@ -25,7 +25,7 @@ namespace EliteJsonApi.Models
         /// </summary>
         [MaxLength(64)]
         [JsonIgnore]
-        public string NameLower { get => Name.ToLower(); set => NameLower = value; }
+        public string NameLower { get; set; }//{ get => Name.ToLower(); set => NameLower = value; }
 
         #region Coordinates
         public double X { get; set; }
