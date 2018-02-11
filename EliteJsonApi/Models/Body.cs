@@ -34,17 +34,17 @@ namespace EliteJsonApi.Models
         /// <summary>
         /// A, Ae/Be, B, C, D, F, G, K, L, M, O, T, Y, etc.
         /// </summary>
-        [MaxLength(3)]
+        [MaxLength(5)]
         public string SpectralClass { get; set; }
         /// <summary>
         /// I - VII
         /// </summary>
-        [MaxLength(3)]
+        [MaxLength(5)]
         public string LuminosityClass { get; set; }
         /// <summary>
         /// a, a0, ab, z, etc.
         /// </summary>
-        [MaxLength(4)]
+        [MaxLength(5)]
         public string LuminositySubClass { get; set; }
 
         #endregion
