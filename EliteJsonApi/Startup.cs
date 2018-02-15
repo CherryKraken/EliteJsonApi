@@ -40,6 +40,13 @@ namespace EliteJsonApi
             }
 
             app.UseMvc();
+
+            // No need to rebuild the database from the CLI every time a change is made
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<EliteDbContext>();
+                context.Database.Migrate();
+            }
         }
     }
 }
