@@ -17,7 +17,7 @@ namespace ImportJsonAndCsv
         static void Main(string[] args)
         {
             // Takes my ingredients file
-            //ImportIngredients("C:\\ingredients.json");
+            ImportIngredients("E:\\ingredients.json");
 
             // Takes EDDB's populated systems JSON dump
             //ImportPopSystemsJson("C:\\systems_populated.json", false);
@@ -35,7 +35,7 @@ namespace ImportJsonAndCsv
             //SetSystemNameLower();
 
             // Takes EDSM's Celetial Bodies nightly JSON dump
-            ImportEdsmBodiesJson("C:\\edsm_bodies.json");
+            //ImportEdsmBodiesJson("C:\\edsm_bodies.json");
         }
 
         private static void SetSystemNameLower()
@@ -64,7 +64,9 @@ namespace ImportJsonAndCsv
                 {
                     Name = j.Name,
                     Grade = j.Value.Value<string>("grade"),
-                    Type = j.Value.Value<string>("type")
+                    Type = j.Value.Value<string>("type"),
+                    Method = j.Value.Value<string>("method"),
+                    MethodDescription = j.Value.Value<string>("methodDesc")
                 });
             }
         }
@@ -76,11 +78,19 @@ namespace ImportJsonAndCsv
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
-                if (context.Material.Count(m => m.Name.Equals(material.Name)) == 0)
+                var temp = context.Material.Select(m => m.Name.Equals(material.Name)).Count();
+                if (temp == 0)
                 {
                     context.Material.Add(material);
                     context.SaveChanges();
                     Console.WriteLine("Added material '" + material.Name + "'");
+                }
+                else
+                {
+                    material.Id = context.Material.Where(m => m.Name.Equals(material.Name)).Select(m => m.Id).First();
+                    context.Material.Update(material);
+                    context.SaveChanges();
+                    Console.WriteLine("Updated material '" + material.Name + "'");
                 }
             }
         }
