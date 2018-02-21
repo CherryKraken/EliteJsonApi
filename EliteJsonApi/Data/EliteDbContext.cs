@@ -31,6 +31,7 @@ namespace EliteJsonApi.Data
             SetUpEntity(builder.Entity<RawMaterialShare>());
             SetUpEntity(builder.Entity<Material>());
             SetUpEntity(builder.Entity<Belt>());
+            SetUpEntity(builder.Entity<Body>());
             SetUpEntity(builder.Entity<Material>());
             SetUpEntity(builder.Entity<AtmosphereComposite>());
             SetUpEntity(builder.Entity<Ring>());
@@ -109,15 +110,17 @@ namespace EliteJsonApi.Data
 
         private void SetUpEntity(EntityTypeBuilder<Body> entity)
         {
-            entity.HasIndex(b => b.Name).IsUnique();
+            entity.HasIndex(b => b.Name).IsUnique(false);
             entity.HasIndex(b => b.EdsmId).IsUnique();
             entity.HasIndex(b => b.StarSystemId).IsUnique(false);
             entity.HasIndex(b => b.DistanceToArrival).IsUnique(false);
             entity.HasIndex(b => b.Type).IsUnique(false);
             entity.HasIndex(b => b.SubType).IsUnique(false);
-            entity.HasIndex(s => s.SpectralClass).IsUnique(false);
-            entity.HasIndex(s => s.IsMainStar).IsUnique(false);
-            entity.HasIndex(s => s.IsScoopable).IsUnique(false);
+            entity.HasIndex(b => b.SpectralClass).IsUnique(false);
+            entity.HasIndex(b => b.IsMainStar).IsUnique(false);
+            entity.HasIndex(b => b.IsScoopable).IsUnique(false);
+            entity.HasIndex(b => b.IsLandable).IsUnique(false);
+            entity.HasIndex(b => b.StarSystemId).IsUnique(false);
         }
 
         private void SetUpEntity(EntityTypeBuilder<AtmosphereComposite> entity)
