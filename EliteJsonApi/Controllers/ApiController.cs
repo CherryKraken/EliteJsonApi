@@ -269,6 +269,12 @@ namespace EliteJsonApi.Controllers
                 results = results.Where(ss => ss.IsPopulated == ispop);
             }
 
+            // Filter by a minimum population
+            if (query.ContainsKey("minpopulation") && int.TryParse(query["minpopulation"], out int pop))
+            {
+                results = results.Where(ss => ss.Population >= pop);
+            }
+
             // Filter by allegiance
             if (query.ContainsKey("allegiance"))
             {
@@ -320,7 +326,7 @@ namespace EliteJsonApi.Controllers
             if (query.ContainsKey("page") && int.TryParse(query["page"], out int page)) { }
             else { page = 1; }
 
-            return results.OrderBy(ss => ss.DistanceTo(rs));//.Skip((page - 1) * 20).Take(20);
+            return results.OrderBy(ss => ss.DistanceTo(rs)).Skip((page - 1) * 20).Take(20);
         }
 
 
