@@ -20,6 +20,9 @@ namespace EliteJsonApi.Models
         [Lookup(LookupOption.MaterialGrade)]
         public string Grade { get; set; }
 
+        public string Method { get; set; }
+        public string MethodDescription { get; set; }
+
         public ICollection<RawMaterialShare> RawMaterialShares { get; set; }
     }
 }
