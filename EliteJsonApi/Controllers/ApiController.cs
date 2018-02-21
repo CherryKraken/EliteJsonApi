@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EliteJsonApi.Controllers
 {
@@ -39,6 +40,32 @@ namespace EliteJsonApi.Controllers
         [HttpGet("bodies")]
         public IEnumerable<Body> GetBodies()
         {
+            // Get and deserialize query from HTTP request
+            Dictionary<string, StringValues> query = new Dictionary<string, StringValues>();
+            foreach (KeyValuePair<string, StringValues> kv in Request.Query)
+            {
+                query.Add(kv.Key.ToLower(), kv.Value);
+            }
+
+            // Return all bodies within a given system 
+            if (query.ContainsKey("system"))
+            {
+                return _context.StarSystem
+                    .Where(ss => ss.NameLower.Equals(((string)query["system"]).ToLower()))
+                    .SelectMany(ss => ss.Bodies);
+            }
+
+            // Return a single object automatically if name is set
+            if (query.ContainsKey("name"))
+            {
+                return _context.Body.Where(b => b.Name.Equals(query["name"], StringComparison.OrdinalIgnoreCase));
+            }
+
+            //
+
+            StarSystem rs = null;
+            int maxDist = 100;
+
             throw new NotImplementedException();
         }
 
@@ -46,9 +73,12 @@ namespace EliteJsonApi.Controllers
         /// GET api/v1/materials
         /// </summary>
         /// <returns></returns>
-        [HttpGet("materials")]
-        public IEnumerable<dynamic> GetMaterials()
+        [HttpGet("materials/{*matName}")]
+        public IEnumerable<dynamic> GetMaterials(string matName)
         {
+            // Get the material from the name
+            var material = _context.Material.FirstOrDefault(m => string.Equals(m.Name, matName, StringComparison.OrdinalIgnoreCase));
+
             // Get and deserialize query from HTTP request
             Dictionary<string, StringValues> query = new Dictionary<string, StringValues>();
             foreach (KeyValuePair<string, StringValues> kv in Request.Query)
@@ -73,27 +103,103 @@ namespace EliteJsonApi.Controllers
                 rs = _context.StarSystem.Single(ss => string.Equals(ss.Name, "sol", StringComparison.OrdinalIgnoreCase));
             }
 
-            if (query.ContainsKey("name"))
+            // Create bounds for bounding box
+            double minx = rs.X - maxDist;
+            double maxx = rs.X + maxDist;
+            double miny = rs.Y - maxDist;
+            double maxy = rs.Y + maxDist;
+            double minz = rs.Z - maxDist;
+            double maxz = rs.Z + maxDist;
+
+            // Initial query using bounding box
+            var systems = (from ss in _context.StarSystem
+                           where minx <= ss.X && ss.X <= maxx
+                              && miny <= ss.Y && ss.Y <= maxy
+                              && minz <= ss.Z && ss.Z <= maxz
+                           select ss);
+
+            if (material == null) return null;
+
+            if (material.Type.Equals("Raw")) // Raw material, find bodies
             {
-                Material mat = _context.Material.FirstOrDefault(m => string.Equals(m.Name, query["name"], StringComparison.OrdinalIgnoreCase));
-                if (mat == null) return null;
+                var results = systems.SelectMany(ss => ss.Bodies).Where(b => b.Materials.Any(m => m.MaterialId == material.Id));
 
-                if (mat.Type.Contains("aw")) // Raw material, find bodies
+                return results.Select(b => new
                 {
-                    var results = _context.Body.Include(b => b.StarSystem).Include(b => b.Materials).Where(b => b.Materials.Select(m => m.MaterialId).Contains(mat.Id));
-                    return results.Select(b => new
-                    {
-                        system_name = b.StarSystem.Name,
-                        body_name = b.Name,
-                        concentration = b.Materials.First(m => m.MaterialId == mat.Id).Share,
-                        system_distance = b.StarSystem.DistanceTo(rs),
-                        distance_to_arrival = b.DistanceToArrival
-                    })
-                    .OrderBy(a => a.system_distance).Take(20);
-                }
+                    systemName = b.StarSystem.Name,
+                    bodyName = b.Name,
+                    concentration = b.Materials.First(m => m.MaterialId == material.Id).Share,
+                    systemDistance = b.StarSystem.DistanceTo(rs),
+                    distanceToArrival = b.DistanceToArrival
+                })
+                .OrderBy(a => a.systemDistance).Take(100);
             }
+            else if (material.Method == null)
+            {
+                return new List<dynamic> { new { whereToFind = material.MethodDescription } };
+            }
+            else if (material.Method.Contains("ELW"))
+            {
+                var results = systems.SelectMany(ss => ss.Bodies).Where(b => b.SubType.Contains("Earth"));
 
-            return null;
+                return results.Select(b => new
+                {
+                    systemName = b.StarSystem.Name,
+                    bodyName = b.Name,
+                    systemAllegiance = b.StarSystem.Allegiance,
+                    systemState = b.StarSystem.State,
+                    systemSecurity = b.StarSystem.Security,
+                    systemDistance = b.StarSystem.DistanceTo(rs),
+                    whereToFind = material.MethodDescription
+                })
+                .OrderBy(a => a.systemDistance).Take(100);
+            }
+            else
+            {
+                var results = systems;
+                bool hasState = true;
+                //bool hasAnarchyOrSecurityLevel = false;
+                foreach (string filter in material.Method.Split(','))
+                {
+                    var f = filter.Split(':');
+                    switch (f[0])
+                    {
+                        case "State":
+                            if (hasState)
+                            {
+                                results = results.Where(ss => ss.State.Equals(f[1].ToNormalCase(LookupOptions.States)));
+                                hasState = false;
+                            }
+                            else
+                            {
+                                results = results.Union(systems.Where(ss => ss.State.Equals(f[1].ToNormalCase(LookupOptions.States))));
+                            }
+                            break;
+                        case "Security":
+                            results = results.Where(ss => ss.Security.Equals(f[1].ToNormalCase(LookupOptions.SecurityTypes)) || ss.Security.Equals("Anarchy"));
+                            break;
+                        case "Government":
+                            results = results.Union(systems.Where(ss => ss.Government.Equals(f[1].ToNormalCase(LookupOptions.Governments))));
+                            break;
+                        case "Allegiance":
+                            results = results.Where(ss => ss.Allegiance.Equals(f[1].ToNormalCase(LookupOptions.Allegiances)));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+
+                return results.Select(ss => new
+                {
+                    systemName = ss.Name,
+                    systemAllegiance = ss.Allegiance,
+                    systemState = ss.State,
+                    systemSecurity = ss.Security,
+                    systemDistance = (float)ss.DistanceTo(rs),
+                    whereToFind = material.MethodDescription
+                })
+                .OrderBy(a => a.systemDistance).Take(100);
+            }
         }
 
         /// <summary>
@@ -152,10 +258,10 @@ namespace EliteJsonApi.Controllers
 
             // Initial query using bounding box
             results = (from ss in _context.StarSystem
-                      where minx <= ss.X && ss.X <= maxx
-                         && miny <= ss.Y && ss.Y <= maxy
-                         && minz <= ss.Z && ss.Z <= maxz
-                      select ss).Include(ss => ss.MinorFactionPresences);
+                       where minx <= ss.X && ss.X <= maxx
+                          && miny <= ss.Y && ss.Y <= maxy
+                          && minz <= ss.Z && ss.Z <= maxz
+                       select ss).Include(ss => ss.MinorFactionPresences);
 
             // Filter by whether system is populated
             if (query.ContainsKey("ispopulated") && bool.TryParse(query["ispopulated"], out bool ispop))
