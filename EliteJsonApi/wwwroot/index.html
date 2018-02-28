@@ -1,0 +1,149 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Asp Behind Things</title>
+    <meta name="author" content="">
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+
+    <script type="text/javascript">
+
+        var viewModel = {
+            dataMats: ko.observableArray(),
+            rawMats: ko.observableArray()
+        }
+
+        $(function () {
+            ko.applyBindings(viewModel);
+        });
+
+
+        $(function () {
+            $("#submit").click(function () {
+                viewModel.dataMats.removeAll();
+                viewModel.rawMats.removeAll();
+                $.getJSON("/api/v1/materials/" + $("#material").val() + "?refsystem=" + $("#refsystem").val(),
+                    function (data) {
+                        console.log("JSON data received")
+                        if (data[0].hasOwnProperty("concentration")) {
+                            ko.mapping.fromJS(data, {}, viewModel.rawMats);
+                        } else {
+                            ko.mapping.fromJS(data, {}, viewModel.dataMats);
+                        }
+                    });
+            });
+        });
+
+        ko.extenders.numeric = function (target, precision) {
+            //create a writable computed observable to intercept writes to our observable
+            var result = ko.pureComputed({
+                read: target,  //always return the original observables value
+                write: function (newValue) {
+                    var current = target(),
+                        roundingMultiplier = Math.pow(10, precision),
+                        newValueAsNum = isNaN(newValue) ? 0 : +newValue,
+                        valueToWrite = Math.round(newValueAsNum * roundingMultiplier) / roundingMultiplier;
+
+                    //only write if it changed
+                    if (valueToWrite !== current) {
+                        target(valueToWrite);
+                    } else {
+                        //if the rounded value is the same, but a different value was written, force a notification for the current field
+                        if (newValue !== current) {
+                            target.notifySubscribers(valueToWrite);
+                        }
+                    }
+                }
+            }).extend({ notify: 'always' });
+
+            //initialize with current value to make sure it is rounded appropriately
+            result(target());
+
+            //return the new computed observable
+            return result;
+        };
+
+    </script>
+</head>
+
+<body class="bg-light">
+
+    <div class="container">
+        <div class="py-5 text-center">
+            <h2>Asp Behind Things - Material Finder</h2>
+            <p class="lead">By CMDR CherryKraken</p>
+        </div>
+
+        <form action="#">
+            <div class="form-group row">
+                <label class="col-form-label col-sm-2" for="refsystem">Current system</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="refsystem">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-form-label col-sm-2" for="material">Material name</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control" id="material">
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-offset-2 col-sm-12">
+                    <button id="submit" type="button" class="btn btn-primary btn-block">Search</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- List results for data and manufactured materials -->
+        <div class="col-sm-10 col-sm-offset-2" data-bind="foreach: dataMats">
+            <hr />
+            <div>
+                <h6>System: <span data-bind="text: systemName"></span></h6>
+            </div>
+            <div>
+                <p>Allegiance: <span data-bind="text: systemAllegiance"></span></p>
+            </div>
+            <div>
+                <p>State: <span data-bind="text: systemState"></span></p>
+            </div>
+            <div>
+                <p>Security: <span data-bind="text: systemSecurity"></span></p>
+            </div>
+            <div>
+                <p>Distance: <span data-bind="text: systemDistance.extend({ numeric: 2})"></span> Ly</p>
+            </div>
+            <div>
+                <p>Where: <span data-bind="text: whereToFind"></span></p>
+            </div>
+        </div>
+
+        <!-- List results for raw materials -->
+        <div class="col-sm-10 col-sm-offset-2" data-bind="foreach: rawMats">
+            <hr />
+            <div>
+                <h6>Planet: <span data-bind="text: bodyName"></span></h6>
+            </div>
+            <div>
+                <p>System: <span data-bind="text: systemName"></span></p>
+            </div>
+            <div>
+                <p>Material Concentration: <span data-bind="text: concentration.extend({ numeric: 2})"></span> %</p>
+            </div>
+            <div>
+                <p>Distance: <span data-bind="text: systemDistance.extend({ numeric: 2})"></span> Ly (<span data-bind="text: distanceToArrival.extend({ numeric: 0})"></span> Ls)</p>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

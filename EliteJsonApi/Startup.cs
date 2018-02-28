@@ -42,6 +42,9 @@ namespace EliteJsonApi
 
             app.UseAuthentication();
 
+            app.UseDefaultFiles();
+            app.UseStaticFiles();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
