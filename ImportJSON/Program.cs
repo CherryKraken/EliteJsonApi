@@ -14,34 +14,44 @@ namespace ImportJsonAndCsv
 {
     class Program
     {
+        private const string _connectionString = "Server=localhost;Port=5432;Database=EliteDB;UserID=postgres;Password=password";
+
         static void Main(string[] args)
         {
-            // Takes my ingredients file
-            ImportIngredients("E:\\ingredients.json");
+            if (args.Length > 0 && Directory.Exists(args[0]))
+            {
+                string dir = args[0];
+                // Takes my ingredients file
+                //ImportIngredients($"{dir}/ingredients.json");
 
-            // Takes EDDB's populated systems JSON dump
-            //ImportPopSystemsJson("C:\\systems_populated.json", false);
+                // Takes EDDB's populated systems JSON dump
+                //ImportPopSystemsJson($"{dir}/systems_populated.json", false);
 
-            // Takes EDDB's factions JSON
-            //ImportFactionsJson("C:\\factions.json");
+                // Takes EDDB's factions JSON
+                //ImportFactionsJson($"{dir}/factions.json");
 
-            // Takes EDDB's populated system JSON file again to update controlling factions and faction presences
-            //ImportPopSystemsJson("C:\\systems_populated.json", true);
+                // Takes EDDB's populated system JSON file again to update controlling factions and faction presences
+                ImportPopSystemsJson($"{dir}/systems_populated.json", true);
 
-            // Takes EDDB's systems CSV (for unpopulated systems)
-            //ImportSystemsCsv("C:\\systems.csv");
+                // Takes EDDB's systems CSV (for unpopulated systems)
+                //ImportSystemsCsv($"{dir}/systems.csv");
 
-            // Update systems with NameLower
-            //SetSystemNameLower();
+                // Update systems with NameLower
+                //SetSystemNameLower();
 
-            // Takes EDSM's Celetial Bodies nightly JSON dump
-            //ImportEdsmBodiesJson("C:\\edsm_bodies.json");
+                // Takes EDSM's Celetial Bodies nightly JSON dump
+                //ImportEdsmBodiesJson($"{dir}/edsm_bodies.json");
+            }
+            else
+            {
+                Console.WriteLine("Please pass a valid path to the data directory\n\te.g. dotnet run -- /home/user/data/");
+            }
         }
 
         private static void SetSystemNameLower()
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -74,7 +84,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateIngredient(Material material)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -458,7 +468,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateRing(Ring ring)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -478,7 +488,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateAtmosComp(AtmosphereComposite ac)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -498,7 +508,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateMaterialShare(RawMaterialShare mat, string name)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -519,7 +529,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateSystem(StarSystem system, bool shouldUpdate = true)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -543,7 +553,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateFactionPresence(MinorFactionPresence mfp, StarSystem ss)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -567,7 +577,7 @@ namespace ImportJsonAndCsv
         private static void TryAddOrUpdateFaction(MinorFaction faction)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {
@@ -593,7 +603,7 @@ namespace ImportJsonAndCsv
         private static bool TryAddOrUpdateBody(Body body)
         {
             DbContextOptionsBuilder<EliteDbContext> config = new DbContextOptionsBuilder<EliteDbContext>();
-            config.UseNpgsql("Server=localhost;Port=5432;Database=EliteDB;UserID=default;Password=123456");
+            config.UseNpgsql(_connectionString);
 
             using (EliteDbContext context = new EliteDbContext(config.Options))
             {

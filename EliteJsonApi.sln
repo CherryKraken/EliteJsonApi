@@ -1,11 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27004.2008
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EliteJsonApi", "EliteJsonApi\EliteJsonApi.csproj", "{B6674F96-511D-4D84-9EE0-62C565C8DA36}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EliteJsonApi", "EliteJsonApi\EliteJsonApi.csproj", "{B6674F96-511D-4D84-9EE0-62C565C8DA36}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImportJsonAndCsv", "ImportJSON\ImportJsonAndCsv.csproj", "{1FA8BB85-C535-4EBC-B4BC-EED5536DBCA2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ImportJsonAndCsv", "ImportJSON\ImportJsonAndCsv.csproj", "{1FA8BB85-C535-4EBC-B4BC-EED5536DBCA2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
