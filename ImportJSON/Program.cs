@@ -15,12 +15,20 @@ namespace ImportJsonAndCsv
     class Program
     {
         private const string _connectionString = "Server=localhost;Port=5432;Database=EliteDB;UserID=postgres;Password=password";
+        private static string _dir;
 
         static void Main(string[] args)
         {
             if (args.Length > 0 && Directory.Exists(args[0]))
             {
-                string dir = args[0];
+                _dir = args[0];
+
+                // Make debug data directory if it does not exist
+                if (!Directory.Exists(_dir + "/debug/"))
+                {
+                    Directory.CreateDirectory(_dir + "/debug/");
+                }
+
                 // Takes my ingredients file
                 //ImportIngredients($"{dir}/ingredients.json");
 
@@ -31,7 +39,7 @@ namespace ImportJsonAndCsv
                 //ImportFactionsJson($"{dir}/factions.json");
 
                 // Takes EDDB's populated system JSON file again to update controlling factions and faction presences
-                ImportPopSystemsJson($"{dir}/systems_populated.json", true);
+                ImportPopSystemsJson($"{_dir}/systems_populated.json", true);
 
                 // Takes EDDB's systems CSV (for unpopulated systems)
                 //ImportSystemsCsv($"{dir}/systems.csv");
@@ -130,7 +138,7 @@ namespace ImportJsonAndCsv
                 }
                 catch
                 {
-                    File.AppendAllText(@"E:\debug.txt", $"faction,{jo.Value<string>("name")},{jo.Value<long?>("id")}\n");
+                    File.AppendAllText($"{_dir}/debug/debug.txt", $"faction,{jo.Value<string>("name")},{jo.Value<long?>("id")}\n");
                 }
             }
         }
@@ -187,7 +195,7 @@ namespace ImportJsonAndCsv
                             }
                             catch
                             {
-                                File.AppendAllText(@"E:\debug.txt", $"eddb_mfp,{ss.Name},{m.Value<long?>("minor_faction_id")}\n");
+                                File.AppendAllText($"{_dir}/debug/debug.txt", $"eddb_mfp,{ss.Name},{m.Value<long?>("minor_faction_id")}\n");
                             }
                         }
                     }
@@ -196,7 +204,7 @@ namespace ImportJsonAndCsv
                 }
                 catch
                 {
-                    File.AppendAllText(@"E:\debug.txt", $"eddb_ss,{jo.Value<string>("name")},{jo.Value<long?>("id")}\n");
+                    File.AppendAllText($"{_dir}/debug/debug.txt", $"eddb_ss,{jo.Value<string>("name")},{jo.Value<long?>("id")}\n");
                 }
             }
         }
