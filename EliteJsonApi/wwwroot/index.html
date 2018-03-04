@@ -9,8 +9,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+    <link rel="stylesheet" href="bs-autocomplete.css" />
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.2/knockout-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/knockout.mapping/2.4.1/knockout.mapping.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
@@ -22,12 +25,10 @@
             rawMats: ko.observableArray()
         }
 
-        $(function () {
+
+        $(document).ready(function () {
             ko.applyBindings(viewModel);
-        });
 
-
-        $(function () {
             $("#submit").click(function () {
                 viewModel.dataMats.removeAll();
                 viewModel.rawMats.removeAll();
@@ -40,6 +41,32 @@
                             ko.mapping.fromJS(data, {}, viewModel.dataMats);
                         }
                     });
+            });
+
+            var cacheSys = new Array();
+            $.getJSON("systemnames.json", function (data) { data.forEach(function (d, i, a) { cacheSys.push(d) }); });
+
+            $("#refsystem").autocomplete({
+                minLength: 1,
+                source: function (request, response) {
+                    var results = $.map(cacheSys, function (item) {
+                        if (item.toUpperCase().indexOf(request.term.toUpperCase()) === 0) {
+                            return item;
+                        }
+                    });
+                    response(results.slice(0, 10));
+                }
+            });
+
+            var cacheMats = new Array();
+            $.getJSON("materialnames.json", function (data) { data.forEach(function (d, i, a) { cacheMats.push(d) }); });
+
+            $("#material").autocomplete({
+                minLength: 1,
+                source: function (request, response) {
+                    var results = $.ui.autocomplete.filter(cacheMats, request.term);
+                    response(results.slice(0, 10));
+                }
             });
         });
 
