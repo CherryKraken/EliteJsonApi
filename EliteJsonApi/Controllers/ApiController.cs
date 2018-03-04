@@ -329,7 +329,17 @@ namespace EliteJsonApi.Controllers
             return results.OrderBy(ss => ss.DistanceTo(rs)).Skip((page - 1) * 20).Take(20);
         }
 
+        [HttpGet("strings/systemnames")]
+        public IEnumerable<string> GetAllSystemNames()
+        {
+            return _context.StarSystem.Select(ss => ss.Name).OrderBy(s => s);
+        }
 
+        [HttpGet("strings/materialnames")]
+        public IEnumerable<string> GetAllMaterialNames()
+        {
+            return _context.Material.Select(mat => mat.Name).OrderBy(s => s);
+        }
 
         // POST api/values
         [HttpPost]
