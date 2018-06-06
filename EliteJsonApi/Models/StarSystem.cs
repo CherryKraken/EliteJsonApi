@@ -98,9 +98,12 @@ namespace EliteJsonApi.Models
         /// <returns>The distance in light-years from this system to the given system</returns>
         public double DistanceTo(StarSystem destination)
         {
-            return /*Distance = */(float)Math.Sqrt(Math.Pow(destination.X - this.X, 2)
-                           + Math.Pow(destination.Y - this.Y, 2)
-                           + Math.Pow(destination.Z - this.Z, 2));
+            if (destination == null)
+                throw new ArgumentNullException();
+
+            return Math.Sqrt(Math.Pow(destination.X - this.X, 2)
+                 + Math.Pow(destination.Y - this.Y, 2)
+                 + Math.Pow(destination.Z - this.Z, 2));
         }
 
     }
