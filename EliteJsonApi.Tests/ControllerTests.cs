@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Xunit;
 
@@ -9,9 +10,15 @@ namespace EliteJsonApi.Tests
     {
         private readonly DatabaseFixture _fixture;
 
-        internal ControllerTests(DatabaseFixture fixture)
+        public ControllerTests(DatabaseFixture fixture)
         {
             _fixture = fixture;
+        }
+
+        [Fact]
+        public void TestSystemsInDB()
+        {
+            Assert.Equal(2, _fixture.Context.StarSystem.Count());
         }
     }
 }
