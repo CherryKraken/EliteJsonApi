@@ -26,7 +26,15 @@ namespace EliteJsonApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // Added during migration to .NET Core 2.1; we're not using cookies yet.
+                options.CheckConsentNeeded = ctx => true;
+                options.MinimumSameSitePolicy = Microsoft.AspNetCore.Http.SameSiteMode.None;
+            });
+
+            services.AddMvc()
+                .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Version_2_1);
 
             var connectionString = Configuration.GetConnectionString("EliteDbContext");
             services.AddEntityFrameworkNpgsql().AddDbContext<EliteDbContext>(options => options.UseNpgsql(connectionString));
@@ -41,13 +49,19 @@ namespace EliteJsonApi
             });
 
             app.UseAuthentication();
-
+            //app.UseHttpsRedirection(); // Added in 2.1, we don't need it, but should implement at some point regardless
             app.UseDefaultFiles();
             app.UseStaticFiles();
+            app.UseCookiePolicy();
 
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+                //app.UseHsts(); // Added in 2.1, we don't need it, but should implement at some point regardless
             }
 
             app.UseMvc();
