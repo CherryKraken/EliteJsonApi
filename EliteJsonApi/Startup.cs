@@ -64,7 +64,10 @@ namespace EliteJsonApi
                 //app.UseHsts(); // Added in 2.1, we don't need it, but should implement at some point regardless
             }
 
-            app.UseMvc();
+            app.UseMvc(routes =>
+            {
+                routes.MapRoute("default", "/{controller=MaterialFinder}/{action=Default}/{id?}");
+            });
 
             // No need to rebuild the database from the CLI every time a change is made
             using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
