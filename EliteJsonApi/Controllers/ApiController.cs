@@ -1,6 +1,7 @@
 ﻿using EliteJsonApi.Data;
 using EliteJsonApi.Models;
 using EliteJsonApi.Models.Helpers;
+using EliteJsonApi.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Primitives;
@@ -341,16 +342,34 @@ namespace EliteJsonApi.Controllers
             return _context.Material.Select(mat => mat.Name).OrderBy(s => s);
         }
 
-        // POST api/values
-        [HttpPost]
-        public void Post([FromBody]string value)
+        [HttpGet("testviewmodel")]
+        public JsonResult GetTestViewModel()
         {
-        }
 
-        // PUT api/values/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
+            var results = new RawMaterialQueryResultList()
+            {
+                Page = 1,
+                List = new List<IRawMaterialContainer>()
+                {
+                    new RawMaterialBodyResult()
+                    {
+                        Name = "PlanetNameHere",
+                        System = "SystemNameHere",
+                        SystemDistance = 99.9,
+                        DistanceToArrival = 1234.5,
+                        Concentration = 55.5
+                    },
+                    new MaterialTraderStationResult()
+                    {
+                        Name = "Scully-Power Station",
+                        System = "Ix",
+                        SystemDistance = 10,
+                        DistanceToArrival = 103.2
+                    }
+                }
+            };
+
+            return results.ToJsonResult();
         }
     }
 }
