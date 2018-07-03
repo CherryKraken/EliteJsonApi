@@ -32,11 +32,11 @@ namespace EliteJsonApi.Models
         public bool HasInterstellarFactors { get; set; }
         public bool HasCommoditiesMarket { get; set; }
         public bool HasTechBroker { get; set; }
-        public bool HasDataMaterialTrader { get; set; }
+        public bool HasEncodedMaterialTrader { get; set; }
         public bool HasRawMaterialTrader { get; set; }
         public bool HasManufacturedMaterialTrader { get; set; }
         [NotMapped]
-        public bool HasMaterialTrader => HasDataMaterialTrader || HasRawMaterialTrader || HasManufacturedMaterialTrader;
+        public bool HasMaterialTrader => HasEncodedMaterialTrader || HasRawMaterialTrader || HasManufacturedMaterialTrader;
 
         #endregion
 
