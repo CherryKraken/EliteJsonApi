@@ -22,7 +22,8 @@
 
         var viewModel = {
             dataMats: ko.observableArray(),
-            rawMats: ko.observableArray()
+            rawMats: ko.observableArray(),
+            manMats: ko.observableArray()
         }
 
 
@@ -129,6 +130,10 @@
                 </div>
             </div>
         </form>
+
+        <select>
+            <option>Nearest</option>
+        </select>
 
         <!-- List results for data and manufactured materials -->
         <div class="col-sm-10 col-sm-offset-2" data-bind="foreach: dataMats">

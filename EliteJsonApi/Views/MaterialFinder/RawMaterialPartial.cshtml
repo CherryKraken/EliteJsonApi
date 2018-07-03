@@ -1,0 +1,69 @@
+﻿@using EliteJsonApi.ViewModels
+@model IEnumerable<IRawMaterialContainer>
+
+@if (Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @*@Html.DisplayNameFor(model => model.Type)*@
+                </th>
+                <th>Name</th>
+                <th>System</th>
+                <th>System Distance</th>
+                <th>Flight Distance</th>
+                <th>Concentration</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @*@Html.DisplayFor(_ => item.Type)*@
+                        @if (item.GetType() == typeof(RawMaterialBodyResult))
+                        {
+                            <object data="/static/planet.svg" type="image/svg+xml">
+                                Body
+                            </object>
+                        }
+                        else if (item.GetType() == typeof(MaterialTraderStationResult))
+                        {
+                            <object data="/static/station.svg" type="image/svg+xml">
+                                Trader
+                            </object>
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(_ => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(_ => item.System)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(_ => item.SystemDistance + " ly")
+                    </td>
+                    <td>
+                        @Html.DisplayFor(_ => item.DistanceToArrival + " ls")
+                    </td>
+                    <td>
+                        @if (item.GetType() == typeof(RawMaterialBodyResult))
+                        {
+                            var rmbr = (RawMaterialBodyResult)item;
+                            @Html.DisplayFor(_ => rmbr.Concentration + " %");
+                        }
+                        else
+                        {
+                            @Html.Display("n/a")
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div id="resultsEmpty">No planets or stations were found nearby</div>
+}
