@@ -3,11 +3,85 @@
 }
 
 <script>
-    $(document).ready(function () {
-        ko.applyBindings(viewModel);
+    var materialCache = [];
+    var defaultSystems = ["Sol","Shinrarta Dezhra", "Sothis", "Deciat", "Maia", "Ceos",  "Cubeo", "Wyrd", "Rhea", "Wolf 397", "Kamadhenu", "Leesti", "Eravate", "Wu Guinagi", "Sirius", "Colonia", "Merope", "Procyon", "Diaguandri", "HIP 10716"];
 
-        $("#submit").click(function () {
-            $("#resultsTable").load("/MaterialFinder/LoadPartial/" + $("#material").val() + "?refsystem=" + $("#refsystem").val());
+    $(document).ready(function () {
+
+        // Create the materials multi-selection combobox
+        $("#materials").selectize({
+            highlight: false,
+            plugins: ["remove_button", "restore_on_backspace"],
+            placeholder: "Select up to 5 items...",
+            maxItems: 5,
+            labelField: "matName",
+            valueField: "matName",
+            searchField: "matName",
+            preload: true,
+            load: function (query, callback) {
+                if (materialCache.length) return callback(materialCache); // Avoid unnecessary AJAX requests
+
+                $.ajax({
+                    url: '../materialnames.json',
+                    type: 'GET',
+                    error: function () { callback(); },
+                    success: function (data) {
+                        materialCache = data.map(
+                            function (item) {
+                                return { matName: item };
+                            }
+                        );
+                        return callback(materialCache);
+                    }
+                });
+            }
+        });
+
+        // Create the reference system combobox
+        $("#refsystem").selectize({
+            highlight: false,
+            plugins: ["restore_on_backspace"],
+            labelField: "sysName",
+            valueField: "sysName",
+            searchField: "sysName",
+            create: false,
+            preload: true,
+            load: function (query, callback) {
+                // Clear cached items from previous requests
+                this.clearOptions();
+                this.renderCache = {};
+
+                if (!query.length) {
+                    return callback(defaultSystems.map(
+                        function (item) {
+                            return { sysName: item };
+                        })
+                    );
+                }
+
+                $.ajax({
+                    url: '../api/v1/strings/systemnames/' + query + '?limit=10',
+                    type: 'GET',
+                    error: function () {
+                        callback(defaultSystems.map(
+                            function (item) {
+                                return { sysName: item };
+                            })
+                        );
+                    },
+                    success: function (data) {
+                        return callback(data.map(
+                            function (item) {
+                                return { sysName: item };
+                            })
+                        );
+                    }
+                });
+            }
+        });
+
+        //$("#submit").click(function () {
+            //$("#resultsTable").load("/MaterialFinder/LoadPartial/" + $("#material").val() + "?refsystem=" + $("#refsystem").val());
             //viewModel.dataMats.removeAll();
             //viewModel.rawMats.removeAll();
             //$.getJSON("/MaterialFinder/LoadPartial/" + $("#material").val() + "?refsystem=" + $("#refsystem").val(),
@@ -20,26 +94,31 @@
             //        }
             //    }
             //);
+        //});
+
+        $("#materialFinderForm").submit(function (event) {
+            event.preventDefault();
+            return false;
         });
     });
 </script>
 
-<form action="#">
+<form id="materialFinderForm" action="#" method="post" enctype="multipart/form-data">
     <div class="form-group row">
-        <label class="col-form-label col-sm-2" for="refsystem">Current system</label>
+        <label class="col-form-label col-sm-2" for="refsystem">Current System</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" id="refsystem">
+            <select id="refsystem" name="refsystem" class="form-control"></select>
         </div>
     </div>
     <div class="form-group row">
-        <label class="col-form-label col-sm-2" for="material">Material name</label>
+        <label class="col-form-label col-sm-2" for="materials">Materials</label>
         <div class="col-sm-10">
-            <input type="text" class="form-control" id="material">
+            <select id="materials" name="materials" class="form-control"></select>
         </div>
     </div>
     <div class="form-group row">
         <div class="col-sm-offset-2 col-sm-12">
-            <button id="submit" type="button" class="btn btn-primary btn-block">Search</button>
+            <submit id="submit" class="btn btn-primary btn-block">Search</submit>
         </div>
     </div>
 </form>
@@ -47,6 +126,7 @@
 <select>
     <option>System Distance</option>
     <option>Supercruise Distance</option>
+    <option>Concentration (Weighted)</option>
 </select>
 
-<div id="resultsTable"></div>
+<div id="resultsContainer"></div>
