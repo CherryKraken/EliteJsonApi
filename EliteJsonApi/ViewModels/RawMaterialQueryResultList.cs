@@ -27,6 +27,11 @@ namespace EliteJsonApi.ViewModels
             }
         }
 
+        public void AddAll(IEnumerable<IRawMaterialContainer> list)
+        {
+            AddAll(list.ToArray());
+        }
+
         public JsonResult ToJsonResult()
         {
             return new JsonResult(this);

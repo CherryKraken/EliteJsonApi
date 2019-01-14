@@ -133,5 +133,14 @@ namespace EliteJsonApi.Data
             entity.HasKey(r => new { r.BodyId, r.Name });
             entity.HasIndex(r => r.Type);
         }
+
+        #region Helper methods and database queries
+
+        public IEnumerable<string> GetSystemNamesContaining(string query)
+        {
+            return StarSystem.Where(ss => ss.NameLower.Contains(query.ToLower())).Select(ss => ss.Name).Take(10).ToList();
+        }
+
+        #endregion
     }
 }

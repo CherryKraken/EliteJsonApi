@@ -1,7 +1,10 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EliteJsonApi.Data;
+using EliteJsonApi.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace EliteJsonApi.Controllers
@@ -9,13 +12,13 @@ namespace EliteJsonApi.Controllers
     [Route("MaterialFinder")]
     public class MaterialFinderController : Controller
     {
-        private readonly ApiController _api;
-        private readonly Data.EliteDbContext _ctx;
+        private readonly MaterialFinderQueryBuilder _finder;
+        private readonly EliteDbContext _ctx;
 
-        public MaterialFinderController(Data.EliteDbContext context)
+        public MaterialFinderController(EliteDbContext context)
         {
             _ctx = context;
-            _api = new ApiController(_ctx);
+            _finder = new MaterialFinderQueryBuilder(_ctx);
         }
 
         [Route("Default")]
@@ -24,32 +27,44 @@ namespace EliteJsonApi.Controllers
             return View();
         }
 
-        [HttpGet("LoadPartial/{*matName}")]
-        public IActionResult LoadPartial(string matName)
+        [HttpGet("LoadPartial/{*delimitedMaterialList}")]
+        public async Task<IActionResult> LoadPartial(string delimitedMaterialList)
         {
-            var mat = _ctx.Material.First(m => m.Name == matName);
+            var list = delimitedMaterialList.Split(',');
+            var mats = _ctx.Material.Where(m => list.Contains(m.Name)).ToList();
 
-            if (mat.Type == "Raw")
-                return RedirectToAction("testviewmodel", "api/v1");
-                    //return RawMaterialPartial(matName);
+            if (mats.All(mat => mat.Type == "Raw"))
+            {
+                var viewModel = _finder.FindRawMaterials(Request.Query, mats.Select(m => m.Name).ToArray());
+                TempData["list"] = viewModel.List;
+                return RedirectToAction("RawMaterialPartial");
+            }
 
-            if (mat.Type == "Data")
-                return EncodedMaterialPartial(matName);
+            if (!mats.Any(mat => mat.Type == "Raw"))
+            {
+                throw new NotImplementedException("Need to implement finder for artificial materials");
+                var viewModels = new { };// _finder.(Request.Query, mats.Select(m => m.Name).ToArray());
+                return RedirectToAction("ArtificialMaterialPartial", new { matNames = mats.Select(m => m.Name).ToArray() });
+            }
+            
+            //using (var client = new HttpClient())
+            //{
+            //    HttpResponseMessage response = await client.GetAsync(Url.Link("RawMaterialPartial", list);
+            //    if (response.IsSuccessStatusCode)
+            //    {
+            //        product = await response.Content.ReadAsAsync<RawMaterialBodyResult>();
+            //    }
+            //}
 
-            if (mat.Type == "Manufactured")
-                return ManufacturedMaterialPartial(matName);
-
-            return new PartialViewResult();
+            return null;
         }
 
-        [HttpGet("RawMaterialPartial/{*matName}")]
-        public PartialViewResult RawMaterialPartial(string matName)
+        [HttpGet]
+        public PartialViewResult RawMaterialPartial()
         {
-            //_api.Request = Request;
-            //_api.Request.Query = Request.Query;
-            //return PartialView(_api.GetMaterials(matName));
-            //return PartialView(RedirectToAction("testviewmodel", "api/v1", Request.Query));
-            return PartialView(_api.GetTestViewModel().);
+            if (!TempData.ContainsKey("list") || TempData["list"] == null)
+                throw new Exception("Action cannot be called in this context.");
+            return PartialView(TempData["list"] as IEnumerable<IRawMaterialContainer>);
         }
 
         [HttpGet]

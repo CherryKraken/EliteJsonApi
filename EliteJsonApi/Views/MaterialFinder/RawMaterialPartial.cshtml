@@ -48,10 +48,19 @@
                         @Html.DisplayFor(_ => item.DistanceToArrival + " ls")
                     </td>
                     <td>
-                        @if (item.GetType() == typeof(RawMaterialBodyResult))
+                        @if (item is RawMaterialBodyResult && (item as RawMaterialBodyResult).Concentrations.Count == 1)
                         {
                             var rmbr = (RawMaterialBodyResult)item;
-                            @Html.DisplayFor(_ => rmbr.Concentration + " %");
+                            @Html.DisplayFor(_ => rmbr.Concentrations.First().Value + " %");
+                        }
+                        else if (item is RawMaterialBodyResult && (item as RawMaterialBodyResult).Concentrations.Count >= 1)
+                        {
+                            var rmbr = (RawMaterialBodyResult)item;
+                            foreach (var c in rmbr.Concentrations)
+                            {
+                                @Html.DisplayFor(_ => $"{c.Key} - ({c.Value} %)");
+                            }
+
                         }
                         else
                         {

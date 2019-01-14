@@ -203,6 +203,14 @@ namespace EliteJsonApi.Controllers
             }
         }
 
+        [HttpPost("materials")]
+        public JsonResult GetMaterialsFromForm(MaterialFormViewModel form)
+        {
+            // Use Selectize.js
+
+            return null;
+        }
+
         /// <summary>
         /// GET api/v1/systems?[parameters]
         /// </summary>
@@ -336,6 +344,16 @@ namespace EliteJsonApi.Controllers
             return _context.StarSystem.Select(ss => ss.Name).OrderBy(s => s);
         }
 
+        [HttpGet("strings/systemnames/{*q}")]
+        public IEnumerable<string> GetSystemNames(string q, int limit = 100)
+        {
+            return _context.StarSystem.Where(ss => ss.NameLower.Contains(q.ToLower()))
+                .Select(ss => ss.Name)
+                .OrderBy(s => s.Length)
+                .ThenBy(s => s)
+                .Take(limit);
+        }
+
         [HttpGet("strings/materialnames")]
         public IEnumerable<string> GetAllMaterialNames()
         {
@@ -356,8 +374,7 @@ namespace EliteJsonApi.Controllers
                         Name = "PlanetNameHere",
                         System = "SystemNameHere",
                         SystemDistance = 99.9,
-                        DistanceToArrival = 1234.5,
-                        Concentration = 55.5
+                        DistanceToArrival = 1234.5
                     },
                     new MaterialTraderStationResult()
                     {
@@ -368,6 +385,9 @@ namespace EliteJsonApi.Controllers
                     }
                 }
             };
+
+            (results.List[0] as RawMaterialBodyResult).Concentrations.Add("Tungsten", 0.45);
+            (results.List[0] as RawMaterialBodyResult).Concentrations.Add("Phosphorous", 26.9);
 
             return results.ToJsonResult();
         }
