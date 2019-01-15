@@ -35,8 +35,9 @@ namespace EliteJsonApi.Controllers
 
             if (mats.All(mat => mat.Type == "Raw"))
             {
+                throw new NotImplementedException("Need to implement finder for raw materials");
                 var viewModel = _finder.FindRawMaterials(Request.Query, mats.Select(m => m.Name).ToArray());
-                TempData["list"] = viewModel.List;
+                //TempData["list"] = viewModel.List;
                 return RedirectToAction("RawMaterialPartial");
             }
 

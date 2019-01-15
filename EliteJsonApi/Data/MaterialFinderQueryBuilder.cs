@@ -1,6 +1,8 @@
 ﻿using EliteJsonApi.Models;
+using EliteJsonApi.Models.Helpers;
 using EliteJsonApi.ViewModels;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
@@ -18,7 +20,7 @@ namespace EliteJsonApi.Data
             _context = context;
         }
 
-        public RawMaterialQueryResultList FindRawMaterials(IQueryCollection queryString, string[] matNames)
+        public JsonResult FindRawMaterials(IQueryCollection queryString, string[] matNames)
         {
             // Get the material from the name
             var materials = new List<Material>();
@@ -67,29 +69,34 @@ namespace EliteJsonApi.Data
 
             if (materials.Count == 0) return null;
 
+            var material = materials.First();
+
             if (material.Type.Equals("Raw")) // Raw material, find bodies
             {
                 var results = systems.SelectMany(ss => ss.Bodies).Where(b => b.Materials.Any(m => m.MaterialId == material.Id));
 
-                return results.Select(b => new
-                {
-                    systemName = b.StarSystem.Name,
-                    bodyName = b.Name,
-                    concentration = b.Materials.First(m => m.MaterialId == material.Id).Share,
-                    systemDistance = b.StarSystem.DistanceTo(rs),
-                    distanceToArrival = b.DistanceToArrival
-                })
-                .OrderBy(a => a.systemDistance).Take(100);
+                return new JsonResult(results
+                        .Select(b => new RawMaterialBodyResult()
+                        {
+                            System = b.StarSystem.Name,
+                            Name = b.Name,
+                             //Concentrations = b.Materials.First(m => m.MaterialId == material.Id).Share,
+                             SystemDistance = b.StarSystem.DistanceTo(rs),
+                            DistanceToArrival = b.DistanceToArrival.Value
+                        })
+                        .OrderBy(a => a.SystemDistance)
+                        .Take(100)
+                );
             }
             else if (material.Method == null)
             {
-                return new List<dynamic> { new { whereToFind = material.MethodDescription } };
+                return new JsonResult(new { whereToFind = material.MethodDescription });
             }
             else if (material.Method.Contains("ELW"))
             {
                 var results = systems.SelectMany(ss => ss.Bodies).Where(b => b.SubType.Contains("Earth"));
 
-                return results.Select(b => new
+                return new JsonResult(results.Select(b => new
                 {
                     systemName = b.StarSystem.Name,
                     bodyName = b.Name,
@@ -99,7 +106,9 @@ namespace EliteJsonApi.Data
                     systemDistance = b.StarSystem.DistanceTo(rs),
                     whereToFind = material.MethodDescription
                 })
-                .OrderBy(a => a.systemDistance).Take(100);
+                .OrderBy(a => a.systemDistance)
+                .Take(100)
+                );
             }
             else
             {
@@ -136,7 +145,7 @@ namespace EliteJsonApi.Data
                     }
                 }
 
-                return results.Select(ss => new
+                return new JsonResult(results.Select(ss => new
                 {
                     systemName = ss.Name,
                     systemAllegiance = ss.Allegiance,
@@ -145,7 +154,7 @@ namespace EliteJsonApi.Data
                     systemDistance = (float)ss.DistanceTo(rs),
                     whereToFind = material.MethodDescription
                 })
-                .OrderBy(a => a.systemDistance).Take(100);
+                .OrderBy(a => a.systemDistance).Take(100));
             }
         }
     }
